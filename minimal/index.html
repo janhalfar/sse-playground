@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello SSE</title>
+  </head>
+  <body>
+    <h1>Minimal SSE Example</h1>
+
+    <p>server time <span id="serverTime">...</span></p>
+    <script>
+
+      const updateTime = (t) => document.getElementById("serverTime").innerText = t;
+
+      //------------------------------------------------------------
+      // SSE server sent events
+      //------------------------------------------------------------
+      const sse = new EventSource("/sse/time");
+      sse.addEventListener("open", (event) => {
+        console.log("connected", event);
+      });
+      sse.addEventListener("time", (event) => {
+        updateTime(event.data);
+      });
+      sse.addEventListener("error", (event) => {
+        if (event.eventPhase == EventSource.CLOSED) {
+          console.log("closed, but an error ?!", sse.readyState);
+        } else {
+          console.error("an error occured", event.type, event.error);
+        }
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello SSE</title>
+  </head>
+  <body>
+    <h1>Minimal SSE Example</h1>
+
+    <form id="login">
+      <h1>Connect to chat</h1>
+      <input id="name" name="name" />
+      <input type="submit" value="connect" />
+    </form>
+
+    <ul id="messages">
+
+    </ul>
+    <div id="chat" hidden="true">
+      <form id="chatForm">
+        <textarea id="chatInput"></textarea>
+        <br />
+        <input type="submit" value="send message" />
+      </form>
+    </div>
+
+    <script>
+      let name = "unknown";
+
+      const add = txt => {
+        const li = document.createElement("li");
+        li.innerText = txt;
+        document.getElementById("messages").appendChild(li);
+      }
+
+      const connect = (newName) => {
+        name = newName;
+        const sse = new EventSource(
+          "/sse/connect?user=" + encodeURIComponent(newName)
+        );
+
+        sse.addEventListener("user", (event) => {
+          add("user connected: " + event.data);
+        });
+        
+        sse.addEventListener("post", (event) => {
+          const post = JSON.parse(event.data);
+          add(post.user + ": " + post.msg);
+        });
+      };
+
+      const sendMessage = (msg) => {
+        fetch("/post?user=" + encodeURIComponent(name), {
+          method: "POST",
+          body: msg,
+        });
+      };
+
+      const loginForm = document.getElementById("login");
+      const chat = document.getElementById("chat");
+      const chatForm = document.getElementById("chatForm");
+
+      loginForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        connect(document.getElementById("name").value);
+        loginForm.hidden = true;
+        chat.hidden = false;
+      });
+
+      chatForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        sendMessage(document.getElementById("chatInput").value);
+        document.getElementById("chatInput").value = "";
+      });
+
+    </script>
+  </body>
+</html>
