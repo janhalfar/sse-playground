@@ -23,7 +23,6 @@ func main() {
 		flusher, _ := w.(http.Flusher)
 
 		i := 0
-		// send a time event 100 times with a pause of 15ms
 		for i < 100 {
 			i++
 			eventID := fmt.Sprint(i)
